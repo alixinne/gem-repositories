@@ -35,7 +35,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec", "~> 3.0"
 
   spec.add_runtime_dependency "gitlab"
-  spec.add_runtime_dependency "bitbucket_rest_api"
+  #spec.add_runtime_dependency "bitbucket_rest_api"
   spec.add_runtime_dependency "github_api"
   spec.add_runtime_dependency "git"
 end
