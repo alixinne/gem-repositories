@@ -5,12 +5,22 @@ require 'repositories/hosts/gitlab'
 
 module Repositories
   class HostConfig
-    attr_reader :hosts
+    attr_reader :hosts, :hosts_by_use
 
     def initialize(config)
-      @hosts = config['hosts'].collect do |host|
+      @hosts_by_use = Hash.new { |hash, key| hash[key] = [] }
+      @hosts = {}
+
+      config['hosts'].each do |host|
+        # Build host
         host_class = Repositories::Hosts.const_get(host['type'].capitalize)
-        host_class.new(host)
+        h = host_class.new(host)
+
+        # Add to use hash
+        @hosts_by_use[h.use_as] << h
+
+        # Add to name hash
+        @hosts[h.type] = h
       end
     end
 

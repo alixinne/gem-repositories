@@ -9,5 +9,9 @@ module Repositories
       @head_commit = head_commit
       @repository = repository
     end
+
+    def to_yaml_properties
+      [:@name, :@head_commit]
+    end
   end
 end

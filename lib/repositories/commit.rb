@@ -10,5 +10,9 @@ module Repositories
       @date = date
       @repository = repository
     end
+
+    def to_yaml_properties
+      [:@sha, :@author, :@date]
+    end
   end
 end

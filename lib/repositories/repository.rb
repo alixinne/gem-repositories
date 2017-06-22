@@ -9,5 +9,13 @@ module Repositories
       @ref = ref
       @branches = []
     end
+
+    def normalized_name
+      name.downcase
+    end
+
+    def to_yaml_properties
+      [:@name, :@branches]
+    end
   end
 end
