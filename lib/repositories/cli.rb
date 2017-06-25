@@ -26,44 +26,30 @@ module Repositories
 
       # For all repositories that have multiple instances
       # Ensure they all have the same state
+
+      had_difference = false
       named_repositories.each do |nn, reps|
         if reps.length > 1
-          differing_branch_state = false
+          ref_rep = reps[0]
+          reps.drop(1).each do |other_rep|
+            diff_state = ref_rep.find_differences(other_rep)
 
-          if reps.all? { |r| r.branches.length == reps[0].branches.length }
-            # All repositories have the same branches
-            ref_rep = reps[0]
-            reps.drop(1).each do |rep|
-              # Check that all branches have a match in the reference repository
-              rep.branches.each do |bran|
-                # Find matching reference branch
-                ref_bran = ref_rep.branches.find { |refb| refb.name == bran.name }
-
-                if ref_bran
-                  # Matching branch found
-                  if ref_bran.head_commit.sha != bran.head_commit.sha
-                    differing_branch_state = true
-                    break
-                  end
-                else
-                  # No matching branch
-                  differing_branch_state = true
-                  break
-                end
-              end
-
-              break if differing_branch_state
+            if diff_state.length > 0
+              puts "On #{ref_rep.name}: differing branch state between #{ref_rep.host.type} and #{other_rep.host.type}"
+              puts YAML.dump({ diferences: diff_state })
+              had_difference = true
             end
-          else
-            differing_branch_state = true
-          end
-
-          if differing_branch_state
-            puts "On #{reps[0].name}: differing branch state"
-            puts YAML.dump(reps)
           end
         end
       end
+
+      if had_difference
+        puts "Differences were found between source repositories, cannot continue."
+        return
+      end
+
+      # Check that all named repositories have an equivalent in all backup repositories
+      # TODO
     end
 
     def self.hr(hc)

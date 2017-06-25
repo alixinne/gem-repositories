@@ -21,7 +21,7 @@ module Repositories
 
       def repositories
         ::Gitlab.projects.auto_paginate.collect do |repo|
-          r = Repository.new(repo.name, repo)
+          r = Repository.new(repo.name, repo, self)
 
           ::Gitlab.branches(repo.id).auto_paginate.each do |bran|
             r.branches << Branch.new(bran.name,

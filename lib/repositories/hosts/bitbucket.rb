@@ -18,7 +18,7 @@ module Repositories
 
       def repositories
         @bitbucket.repos.list.collect do |repo|
-          r = Repository.new(repo.name, repo)
+          r = Repository.new(repo.name, repo, self)
 
           @bitbucket.repos.branches(repo.owner, repo.slug) do |name, bran|
             response = []
