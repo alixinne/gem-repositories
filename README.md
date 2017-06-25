@@ -1,41 +1,56 @@
 # Repositories
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/repositories`. To experiment with that code, run `bin/console` for an interactive prompt.
+_Repositories_ is a gem implementing a ``repupdate`` command that synchronizes
+a set of repositories on Git hosts (GitLab, Bitbucket, GitHub) to a set of
+destination Git hosts (currently, only GitLab).
 
-TODO: Delete this and the text above, and describe your gem
+Matching repositories accross hosts is based on lowercased repository names. Any
+difference in branch HEADS will trigger an update from the source repository to
+the backup repositories.
+
+If a repository is present in multiple source repositories, those will be
+required to match before continuing with the update to the backup hosts.
 
 ## Installation
 
-Add this line to your application's Gemfile:
-
-```ruby
-gem 'repositories'
-```
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install repositories
+Installation as a Gem is not supported yet because of hardcoded dependencies in
+the Gemfile. Instead, clone this repository and run `bundle` to install the
+dependencies.
 
 ## Usage
 
-TODO: Write usage instructions here
+Setup the hosts as follows in a file called `hosts.yml`:
 
-## Development
+```yaml
+---
+hosts:
+  - type: github
+    username: **insert username**
+    token: **insert private token**
+    use_as: source
+    exclude:
+      - some-repository # don't backup this
+  - type: bitbucket
+    username: **insert username**
+    token: **insert private token**
+    use_as: source
+    include:
+      - other-repository # only backup this
+  - type: gitlab
+    base: https://[gitlab-api-domain]/api/v4
+    username: **insert username**
+    token: **insert private token**
+    use_as: backup
+```
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+Then, run the repupdate command. Note that SSH keys must have been configured
+for the automatic update to succeed.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
-## Contributing
-
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/repositories.
-
+```
+$ bundle exec repupdate --hosts hosts.yml [--force]
+```
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
-
+This source code is available as open source under the terms of the
+[MIT License](http://opensource.org/licenses/MIT).
