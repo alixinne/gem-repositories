@@ -1,6 +1,7 @@
 require 'repositories/base'
 require 'repositories/host_config'
 
+require 'fileutils'
 require 'yaml'
 
 module Repositories
@@ -54,26 +55,63 @@ module Repositories
         hc.hosts_by_use[:backup].each do |backup_host|
           backup_rep = host_repositories[backup_host.type].find { |br| br.normalized_name == nn}
 
+          source_ssh = rep.ssh_url
+          target_ssh = nil
+
+          should_update = false
+
           if backup_rep
             # Found a matching backup repository on backup host
             diff_state = rep.find_differences(backup_rep)
+            target_ssh = backup_rep.ssh_url
 
             print_diff_state(rep, backup_rep, diff_state) do
               had_difference = true
+              should_update = true
             end
           else
             # Found no matching backup repository
             STDERR.puts "#{rep.name} is missing from #{backup_host.type}"
+            had_difference = true
+            should_update = true
+
+            # Create repository
+            STDERR.print "Creating repository... "
+            target_ssh = backup_host.create_repository(rep.name)
+            STDERR.puts "completed at #{target_ssh}"
+          end
+
+          if should_update
+            STDERR.puts "Updating #{rep.name} on #{backup_host.type}"
+
+            STDERR.puts "Cloning source repository"
+            if doexec(["git", "clone", "--bare", source_ssh, "working.git"])
+              Dir.chdir "working.git" do
+                STDERR.puts "Mirroring to target repository"
+                if doexec(["git", "push", "--mirror", target_ssh])
+                  STDERR.puts "Completed!"
+                else
+                  STDERR.puts "Failed!"
+                end
+              end
+            else
+              STDERR.puts "Cloning source repository failed!"
+            end
+
+            if Dir.exists? "working.git"
+              STDERR.puts "Cleaning working.git directory"
+              FileUtils.rmtree("working.git", secure: true)
+            end
           end
         end
       end
 
-      if had_difference
-        puts "Differences were found between backup and source repositories."
-        return 2
-      end
-
       return 0
+    end
+
+    def self.doexec(cmd)
+      STDERR.puts(cmd.inspect)
+      system(*cmd)
     end
 
     def self.hr(hc)

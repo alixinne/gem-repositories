@@ -3,7 +3,7 @@ require 'repositories/base'
 module Repositories
   module Hosts
     class Base
-      attr_reader :type, :use_as
+      attr_reader :type, :use_as, :exclude
 
       def initialize(config)
         @base = config['base']
@@ -11,6 +11,7 @@ module Repositories
         @token = config['token']
         @type = config['type'].downcase.to_sym
         @use_as = config['use_as'].downcase.to_sym
+        @exclude = config['exclude'] || []
       end
 
       def to_yaml_properties

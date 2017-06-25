@@ -23,6 +23,8 @@ module Repositories
 
       def repositories
         ::Gitlab.projects.auto_paginate.collect do |repo|
+          next if self.exclude.include? repo.name
+
           r = Repository.new(repo.name, repo, repo.ssh_url_to_repo, self)
 
           ::Gitlab.branches(repo.id).auto_paginate.each do |bran|
@@ -47,7 +49,7 @@ module Repositories
           snippets_enabled: 0,
           merge_requests_enabled: 0,
           public: 0,
-          user_id: @user_id
+          #user_id: @user_id
         }).ssh_url_to_repo
       end
     end
