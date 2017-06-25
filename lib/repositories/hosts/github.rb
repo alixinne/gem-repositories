@@ -18,7 +18,10 @@ module Repositories
       end
 
       def repositories
-        @github.repos.list.body.collect do |repo|
+        repos = []
+
+        @github.repos.list.body.each do |repo|
+          next unless matches(repo.name)
           r = Repository.new(repo.name, repo, repo.ssh_url, self)
 
           @github.repos.branches(repo.owner.login, repo.name).body.each do |bran|
@@ -32,8 +35,10 @@ module Repositories
                                      r)
           end
 
-          r
+          repos << r
         end
+
+        repos
       end
     end
   end

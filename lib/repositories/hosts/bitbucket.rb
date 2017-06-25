@@ -17,8 +17,10 @@ module Repositories
       end
 
       def repositories
-        @bitbucket.repos.list.collect do |repo|
-          next if self.exclude.include? repo.name
+        repos = []
+
+        @bitbucket.repos.list.each do |repo|
+          next unless matches(repo.name)
           ssh_url = "git@bitbucket.org:#{repo.owner}/#{repo.slug}.git"
           r = Repository.new(repo.name, repo, ssh_url, self)
 
@@ -33,8 +35,10 @@ module Repositories
             r.branches << Branch.new(name, c, r)
           end
 
-          r
+          repos << r
         end
+
+        repos
       end
     end
   end

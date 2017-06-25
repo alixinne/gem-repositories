@@ -13,6 +13,15 @@ module Repositories
         @type = config['type'].downcase.to_sym
         @use_as = config['use_as'].downcase.to_sym
         @exclude = config['exclude'] || []
+        @include = config['include']
+      end
+
+      def matches(rep_name)
+        if @include
+          @include.include? rep_name
+        else
+          not @exclude.include? rep_name
+        end
       end
 
       def to_yaml_properties
