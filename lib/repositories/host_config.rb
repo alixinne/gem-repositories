@@ -20,7 +20,7 @@ module Repositories
         @hosts_by_use[h.use_as] << h
 
         # Add to name hash
-        @hosts[h.type] = h
+        @hosts[h.name] = h
       end
     end
 

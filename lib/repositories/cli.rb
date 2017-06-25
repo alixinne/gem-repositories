@@ -18,9 +18,9 @@ module Repositories
       named_repositories = Hash.new { |hash, key| hash[key] = [] }
 
       hc.hosts_by_use[:source].each do |host|
-        host_repositories[host.type].each do |rep|
+        host_repositories[host.name].each do |rep|
           array = named_repositories[rep.normalized_name]
-          STDERR.puts "Adding one instance of #{rep.name} (#{host.type}) to #{array.length} existing"
+          STDERR.puts "Adding one instance of #{rep.name} (#{host.name}) to #{array.length} existing"
           array << rep
         end
       end
@@ -53,7 +53,7 @@ module Repositories
         rep = reps[0]
 
         hc.hosts_by_use[:backup].each do |backup_host|
-          backup_rep = host_repositories[backup_host.type].find { |br| br.normalized_name == nn}
+          backup_rep = host_repositories[backup_host.name].find { |br| br.normalized_name == nn}
 
           source_ssh = rep.ssh_url
           target_ssh = nil
@@ -71,7 +71,7 @@ module Repositories
             end
           else
             # Found no matching backup repository
-            STDERR.puts "#{rep.name} is missing from #{backup_host.type}"
+            STDERR.puts "#{rep.name} is missing from #{backup_host.name}"
             had_difference = true
             should_update = true
 
@@ -82,7 +82,7 @@ module Repositories
           end
 
           if should_update
-            STDERR.puts "Updating #{rep.name} on #{backup_host.type}"
+            STDERR.puts "Updating #{rep.name} on #{backup_host.name}"
 
             STDERR.puts "Cloning source repository"
             if doexec(["git", "clone", "--bare", source_ssh, "working.git"])
@@ -127,7 +127,7 @@ module Repositories
 
     def self.print_diff_state(ref, other, state)
       if state.length > 0
-        STDERR.puts "On #{ref.name}: differing branch state between #{ref.host.type} and #{other.host.type}"
+        STDERR.puts "On #{ref.name}: differing branch state between #{ref.host.name} and #{other.host.name}"
         STDERR.puts YAML.dump({ differences: state })
         yield if block_given?
       end

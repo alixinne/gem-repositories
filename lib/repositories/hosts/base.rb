@@ -3,9 +3,10 @@ require 'repositories/base'
 module Repositories
   module Hosts
     class Base
-      attr_reader :type, :use_as, :exclude
+      attr_reader :type, :use_as, :exclude, :name
 
       def initialize(config)
+        @name = config['name'] || config['type'].to_s
         @base = config['base']
         @username = config['username']
         @token = config['token']
