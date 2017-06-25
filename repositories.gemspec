@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.name          = "repositories"
   spec.version       = Repositories::VERSION
   spec.authors       = ["Vincent Tavernier"]
-  spec.email         = ["vincent.tavernier@ensimag.grenoble-inp.fr"]
+  spec.email         = ["vince.tavernier@gmail.com"]
 
   spec.summary       = %q{Repository multi-host management tool}
   spec.description   = %q{Manage the different versions of a same repository on different Git hosts.}
