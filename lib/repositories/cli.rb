@@ -3,12 +3,31 @@ require 'repositories/host_config'
 
 require 'fileutils'
 require 'yaml'
+require 'optparse'
+require 'ostruct'
 
 module Repositories
   module CLI
     def self.run(argv)
+      options = OpenStruct.new
+      options.hosts = 'hosts.yml'
+      options.force = false
+
+      opt_parser = OptionParser.new do |opts|
+        opts.banner = "Usage: repupdate [options]"
+
+        opts.on("-h", "--hosts [PATH]", "Host config file") do |hosts|
+          options.hosts = hosts
+        end
+
+        opts.on("-f", "--force", "Force push to backup repositories") do |f|
+          options.force = true
+        end
+      end
+      opt_parser.parse!(argv)
+
       # Load config for Git hosts
-      hc = HostConfig.load(argv.first || 'hosts.yml')
+      hc = HostConfig.load(options.hosts)
 
       # Build a hash of all repositories
       host_repositories = self.hr(hc)
@@ -88,7 +107,11 @@ module Repositories
             if doexec(["git", "clone", "--bare", source_ssh, "working.git"])
               Dir.chdir "working.git" do
                 STDERR.puts "Mirroring to target repository"
-                if doexec(["git", "push", "--mirror", target_ssh])
+                cmd = ["git", "push", "--mirror"]
+                cmd << "--force" if options.force
+                cmd << target_ssh
+
+                if doexec(cmd)
                   STDERR.puts "Completed!"
                 else
                   STDERR.puts "Failed!"
