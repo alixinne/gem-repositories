@@ -18,7 +18,8 @@ module Repositories
 
       def repositories
         @bitbucket.repos.list.collect do |repo|
-          r = Repository.new(repo.name, repo, self)
+          ssh_url = "git@bitbucket.org/#{repo.owner}/#{repo.slug}.git"
+          r = Repository.new(repo.name, repo, ssh_url, self)
 
           @bitbucket.repos.branches(repo.owner, repo.slug) do |name, bran|
             response = []

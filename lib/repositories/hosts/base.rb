@@ -12,6 +12,10 @@ module Repositories
         @type = config['type'].downcase.to_sym
         @use_as = config['use_as'].downcase.to_sym
       end
+
+      def to_yaml_properties
+        [:@type, :@use_as, :@base]
+      end
     end
   end
 end

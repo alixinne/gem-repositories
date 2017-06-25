@@ -2,4 +2,4 @@
 
 require 'repositories'
 
-Repositories::CLI.run(ARGV)
+exit Repositories::CLI.run(ARGV)

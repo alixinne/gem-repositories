@@ -2,12 +2,13 @@ require 'repositories/base'
 
 module Repositories
   class Repository
-    attr_reader :name, :ref, :branches, :host
+    attr_reader :name, :ref, :branches, :ssh_url, :host
 
-    def initialize(name, ref, host)
+    def initialize(name, ref, ssh_url, host)
       @name = name
       @ref = ref
       @host =  host
+      @ssh_url = ssh_url
       @branches = []
     end
 
@@ -27,7 +28,7 @@ module Repositories
           if branch.head_commit.sha != other_branch.head_commit.sha
             diffs << {
               type: :different_head_commit,
-              ref_branch: branch
+              ref_branch: branch,
               other_branch: other_branch
             }
           end
@@ -43,7 +44,7 @@ module Repositories
     end
 
     def to_yaml_properties
-      [:@name, :@branches]
+      [:@name, :@branches, :@ssh_url, :@host]
     end
   end
 end

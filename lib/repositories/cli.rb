@@ -19,7 +19,7 @@ module Repositories
       hc.hosts_by_use[:source].each do |host|
         host_repositories[host.type].each do |rep|
           array = named_repositories[rep.normalized_name]
-          puts "Adding one instance of #{rep.name} (#{host.type}) to #{array.length} existing"
+          STDERR.puts "Adding one instance of #{rep.name} (#{host.type}) to #{array.length} existing"
           array << rep
         end
       end
@@ -34,9 +34,7 @@ module Repositories
           reps.drop(1).each do |other_rep|
             diff_state = ref_rep.find_differences(other_rep)
 
-            if diff_state.length > 0
-              puts "On #{ref_rep.name}: differing branch state between #{ref_rep.host.type} and #{other_rep.host.type}"
-              puts YAML.dump({ diferences: diff_state })
+            print_diff_state(ref_rep, other_rep, diff_state) do
               had_difference = true
             end
           end
@@ -44,23 +42,57 @@ module Repositories
       end
 
       if had_difference
-        puts "Differences were found between source repositories, cannot continue."
-        return
+        STDERR.puts "Differences were found between source repositories, cannot continue."
+        return 1
       end
 
       # Check that all named repositories have an equivalent in all backup repositories
-      # TODO
+      named_repositories.each do |nn, reps|
+        # Use the first repository as a reference
+        rep = reps[0]
+
+        hc.hosts_by_use[:backup].each do |backup_host|
+          backup_rep = host_repositories[backup_host.type].find { |br| br.normalized_name == nn}
+
+          if backup_rep
+            # Found a matching backup repository on backup host
+            diff_state = rep.find_differences(backup_rep)
+
+            print_diff_state(rep, backup_rep, diff_state) do
+              had_difference = true
+            end
+          else
+            # Found no matching backup repository
+            STDERR.puts "#{rep.name} is missing from #{backup_host.type}"
+          end
+        end
+      end
+
+      if had_difference
+        puts "Differences were found between backup and source repositories."
+        return 2
+      end
+
+      return 0
     end
 
     def self.hr(hc)
       reps = {}
 
       hc.hosts.each do |type, host|
-        puts "Fetching #{type} repositories..."
+        STDERR.puts "Fetching #{type} repositories..."
         reps[type] = host.repositories
       end
 
       reps
+    end
+
+    def self.print_diff_state(ref, other, state)
+      if state.length > 0
+        STDERR.puts "On #{ref.name}: differing branch state between #{ref.host.type} and #{other.host.type}"
+        STDERR.puts YAML.dump({ differences: state })
+        yield if block_given?
+      end
     end
   end
 end

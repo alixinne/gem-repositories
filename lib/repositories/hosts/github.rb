@@ -19,7 +19,7 @@ module Repositories
 
       def repositories
         @github.repos.list.body.collect do |repo|
-          r = Repository.new(repo.name, repo, self)
+          r = Repository.new(repo.name, repo, repo.ssh_url, self)
 
           @github.repos.branches(repo.owner.login, repo.name).body.each do |bran|
             c = @github.repos.commits.get(repo.owner.login, repo.name, bran.commit.sha)
