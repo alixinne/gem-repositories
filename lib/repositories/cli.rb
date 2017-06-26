@@ -1,5 +1,6 @@
 require 'repositories/base'
 require 'repositories/host_config'
+require 'repositories/actors/ssh_updater'
 
 require 'fileutils'
 require 'yaml'
@@ -12,12 +13,17 @@ module Repositories
       options = OpenStruct.new
       options.hosts = 'hosts.yml'
       options.force = false
+      options.dry_run = false
 
       opt_parser = OptionParser.new do |opts|
         opts.banner = "Usage: repupdate [options]"
 
         opts.on("-h", "--hosts [PATH]", "Host config file") do |hosts|
           options.hosts = hosts
+        end
+
+        opts.on("-n", "--dry-run", "Do not perform actions on repositories") do
+          options.dry_run = true
         end
 
         opts.on("-f", "--force", "Force push to backup repositories") do
@@ -79,6 +85,7 @@ module Repositories
 
       # Check that all named repositories have an equivalent in all backups
       exit_code = 0
+      updater = SSHUpdater.new(options)
 
       source_repositories.each do |_nn, rep|
         hc.hosts_by_use[:backup].each do |backup_host|
@@ -109,41 +116,13 @@ module Repositories
           end
 
           next unless should_update
+
           STDERR.puts "Updating #{rep.name} on #{backup_host.name}"
-
-          STDERR.puts "Cloning source repository"
-          if doexec(["git", "clone", "--bare", source_ssh, "working.git"])
-            Dir.chdir "working.git" do
-              STDERR.puts "Mirroring to target repository"
-              cmd = ["git", "push", "--mirror"]
-              cmd << "--force" if options.force
-              cmd << target_ssh
-
-              if doexec(cmd)
-                STDERR.puts "Completed!"
-              else
-                STDERR.puts "Failed!"
-                exit_code = 1
-              end
-            end
-          else
-            STDERR.puts "Cloning source repository failed!"
-            exit_code = 1
-          end
-
-          if Dir.exist? "working.git"
-            STDERR.puts "Cleaning working.git directory"
-            FileUtils.rmtree("working.git", secure: true)
-          end
+          updater.update(source_ssh, target_ssh)
         end
       end
 
       exit_code # success
-    end
-
-    def self.doexec(cmd)
-      STDERR.puts(cmd.inspect)
-      system(*cmd)
     end
 
     def self.hr(hc)
