@@ -1,5 +1,7 @@
 require 'repositories/base'
 
+require 'date'
+
 module Repositories
   class Commit
     attr_reader :sha, :author, :date, :repository
@@ -7,12 +9,12 @@ module Repositories
     def initialize(sha, author, date, repository)
       @sha = sha
       @author = author
-      @date = date
+      @date = date.is_a? String ? DateTime.strptime(date) : date
       @repository = repository
     end
 
     def to_yaml_properties
-      [:@sha, :@author, :@date]
+      %i[@sha @author @date]
     end
   end
 end

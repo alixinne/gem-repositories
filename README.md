@@ -8,8 +8,9 @@ Matching repositories accross hosts is based on lowercased repository names. Any
 difference in branch HEADS will trigger an update from the source repository to
 the backup repositories.
 
-If a repository is present in multiple source repositories, those will be
-required to match before continuing with the update to the backup hosts.
+If a repository is present in multiple source repositories, the one with the
+most recent branch head will be chosen as the source for the copy to the backup
+hosts.
 
 ## Installation
 

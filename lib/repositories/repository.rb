@@ -16,13 +16,18 @@ module Repositories
       name.downcase
     end
 
+    def most_recent_head
+      branches.max_by { |branch| branch.head_commit.date }.head_commit
+    end
+
     def find_differences(other)
-      raise "Not a Repositories::Repository" unless other.is_a? Repositories::Repository
+      raise "Not a Repositories::Repository" unless other.is_a? Repository
 
       diffs = []
-
       branches.each do |branch|
-        other_branch = other.branches.find { |otherb| otherb.name == branch.name }
+        other_branch = other.branches.find do |otherb|
+          otherb.name == branch.name
+        end
 
         if other_branch
           if branch.head_commit.sha != other_branch.head_commit.sha
@@ -39,12 +44,11 @@ module Repositories
           }
         end
       end
-
       diffs
     end
 
     def to_yaml_properties
-      [:@name, :@branches, :@ssh_url, :@host]
+      %i[@name @branches @ssh_url @host]
     end
   end
 end

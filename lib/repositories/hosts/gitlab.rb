@@ -45,20 +45,19 @@ module Repositories
 
       def create_repository(name)
         with_gitlab do
-          ::Gitlab.create_project(name, {
-            default_branch: 'master',
-            wiki_enabled: 0,
-            wall_enabled: 0,
-            issues_enabled: 0,
-            snippets_enabled: 0,
-            merge_requests_enabled: 0,
-            public: 0,
-            #user_id: @user_id
-          }).ssh_url_to_repo
+          ::Gitlab.create_project(name,
+                                  default_branch: 'master',
+                                  wiki_enabled: 0,
+                                  wall_enabled: 0,
+                                  issues_enabled: 0,
+                                  snippets_enabled: 0,
+                                  merge_requests_enabled: 0,
+                                  public: 0).ssh_url_to_repo
         end
       end
 
       private
+
       def with_gitlab
         ::Gitlab.configure do |c|
           c.endpoint = @base

@@ -20,12 +20,12 @@ module Repositories
         if @include
           @include.include? rep_name
         else
-          not @exclude.include? rep_name
+          !@exclude.include? rep_name
         end
       end
 
       def to_yaml_properties
-        [:@type, :@use_as, :@base]
+        %i[@type @use_as @base]
       end
     end
   end

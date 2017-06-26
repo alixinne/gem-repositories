@@ -25,7 +25,7 @@ module Repositories
     end
 
     def self.load(path)
-      self.new(YAML.load_file(path))
+      new(YAML.load_file(path))
     end
   end
 end

@@ -24,7 +24,7 @@ module Repositories
           ssh_url = "git@bitbucket.org:#{repo.owner}/#{repo.slug}.git"
           r = Repository.new(repo.name, repo, ssh_url, self)
 
-          @bitbucket.repos.branches(repo.owner, repo.slug) do |name, bran|
+          @bitbucket.repos.branches(repo.owner, repo.slug) do |name, _bran|
             response = []
             @bitbucket.repos.commits.list(repo.owner, repo.slug, name).each do |item|
               response << item

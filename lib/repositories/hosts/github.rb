@@ -14,7 +14,7 @@ module Repositories
         super(config)
 
         @github = ::Github.new basic_auth: "#{@user}:#{@token}",
-          auto_pagination: true
+                               auto_pagination: true
       end
 
       def repositories
@@ -25,7 +25,9 @@ module Repositories
           r = Repository.new(repo.name, repo, repo.ssh_url, self)
 
           @github.repos.branches(repo.owner.login, repo.name).body.each do |bran|
-            c = @github.repos.commits.get(repo.owner.login, repo.name, bran.commit.sha)
+            c = @github.repos.commits.get(repo.owner.login,
+                                          repo.name,
+                                          bran.commit.sha)
 
             r.branches << Branch.new(bran.name,
                                      Commit.new(c.sha,

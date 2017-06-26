@@ -3,7 +3,7 @@ require 'repositories/base'
 module Repositories
   class Branch
     attr_reader :name, :head_commit, :repository
-    
+
     def initialize(name, head_commit, repository)
       @name = name
       @head_commit = head_commit
@@ -11,7 +11,7 @@ module Repositories
     end
 
     def to_yaml_properties
-      [:@name, :@head_commit]
+      %i[@name @head_commit]
     end
   end
 end
