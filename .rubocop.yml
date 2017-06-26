@@ -1,0 +1,6 @@
+Style/StringLiterals:
+  Enabled: false
+Layout/EndOfLine:
+  Enabled: false
+Metrics/MethodLength:
+  Enabled: false
