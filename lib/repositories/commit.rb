@@ -9,7 +9,16 @@ module Repositories
     def initialize(sha, author, date, repository)
       @sha = sha
       @author = author
-      @date = date.is_a? String ? DateTime.strptime(date) : date
+      begin
+        @date = date.is_a?(String) ? DateTime.strptime(date) : date
+      rescue
+        # in case default date parsing fails
+        begin
+          @date = DateTime.strptime(date, "%FT%T.%L%:z")
+        rescue => e
+          raise "Failed to parse #{date}"
+        end
+      end
       @repository = repository
     end
 

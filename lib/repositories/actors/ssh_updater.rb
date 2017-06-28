@@ -16,7 +16,7 @@ module Repositories
             Dir.chdir tmpdir do
               STDERR.puts "Mirroring to target repository"
               cmd = ["git", "push", "--mirror"]
-              cmd << "--force" if options.force
+              cmd << "--force" if @options.force
               cmd << target_ssh
 
               if doexec(cmd)

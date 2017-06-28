@@ -70,7 +70,7 @@ module Repositories
           end
         end
 
-        if unmatch_count
+        if unmatch_count > 0
           ref_rep = reps.max_by { |rep| rep.most_recent_head.date }
           STDERR.puts "On #{ref_rep.name}: differences were found between "\
                       "source repositories. Using #{ref_rep.host.name} as a "\
@@ -85,9 +85,9 @@ module Repositories
 
       # Check that all named repositories have an equivalent in all backups
       exit_code = 0
-      updater = SSHUpdater.new(options)
+      updater = Repositories::Actors::SSHUpdater.new(options)
 
-      source_repositories.each do |_nn, rep|
+      source_repositories.each do |nn, rep|
         hc.hosts_by_use[:backup].each do |backup_host|
           backup_rep = host_repositories[backup_host.name].find { |br| br.normalized_name == nn }
 
@@ -110,9 +110,13 @@ module Repositories
             should_update = true
 
             # Create repository
-            STDERR.print "Creating repository... "
-            target_ssh = backup_host.create_repository(rep.name)
-            STDERR.puts "completed at #{target_ssh}"
+            unless options.dry_run
+              STDERR.print "Creating repository... "
+              target_ssh = backup_host.create_repository(rep.name)
+              STDERR.puts "completed at #{target_ssh}"
+            else
+              STDERR.puts "Creating repository on #{backup_host.name}"
+            end
           end
 
           next unless should_update

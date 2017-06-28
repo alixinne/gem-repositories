@@ -34,8 +34,8 @@ module Repositories
               end
 
               repos << r
-            rescue
-              puts "Could not fetch #{repo.name}, it may not belong to us"
+            rescue => e
+              puts "Could not fetch #{repo.name}, it may not belong to us: #{e}"
             end
           end
 

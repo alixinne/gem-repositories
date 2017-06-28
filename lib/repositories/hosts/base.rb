@@ -11,7 +11,7 @@ module Repositories
         @username = config['username']
         @token = config['token']
         @type = config['type'].downcase.to_sym
-        @use_as = config['use_as'].downcase.to_sym
+        @use_as = (config['use_as'] || 'source').downcase.to_sym
         @exclude = config['exclude'] || []
         @include = config['include']
       end
