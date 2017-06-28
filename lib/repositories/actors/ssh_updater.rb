@@ -12,8 +12,9 @@ module Repositories
 
         Dir.mktmpdir do |tmpdir|
           STDERR.puts "Cloning source repository"
-          if doexec(["git", "clone", "--bare", source_ssh, tmpdir])
-            Dir.chdir tmpdir do
+          target_dir = File.join(tmpdir, "working.git")
+          if doexec(["git", "clone", "--bare", source_ssh, target_dir])
+            Dir.chdir target_dir do
               STDERR.puts "Mirroring to target repository"
               cmd = ["git", "push", "--mirror"]
               cmd << "--force" if @options.force
