@@ -134,7 +134,17 @@ module Repositories
 
       hc.hosts.each do |type, host|
         STDERR.puts "Fetching #{type} repositories..."
-        reps[type] = host.repositories
+        begin
+          reps[type] = host.repositories
+        rescue => e
+          STDERR.puts "#{type}: failed to fetch repositories: #{e}"
+          if host.use_as == :backup
+            STDERR.puts "Cannot continue, aborting."
+            exit(2)
+          else
+            reps[type] = []
+          end
+        end
       end
 
       reps
