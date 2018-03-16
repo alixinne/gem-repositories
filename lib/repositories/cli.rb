@@ -122,7 +122,9 @@ module Repositories
           next unless should_update
 
           STDERR.puts "Updating #{rep.name} on #{backup_host.name}"
-          updater.update(source_ssh, target_ssh)
+          unless updater.update(source_ssh, target_ssh)
+            exit_code = 1
+          end
         end
       end
 
