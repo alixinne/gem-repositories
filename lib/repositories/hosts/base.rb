@@ -17,10 +17,12 @@ module Repositories
       end
 
       def matches(rep_name)
-        if @include
+        if not @include.nil?
           @include.include? rep_name
-        else
+        elsif not @exclude.nil?
           !@exclude.include? rep_name
+        else
+          true
         end
       end
 
