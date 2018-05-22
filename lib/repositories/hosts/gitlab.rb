@@ -18,7 +18,7 @@ module Repositories
         with_gitlab do
           repos = []
 
-          ::Gitlab.projects.auto_paginate.each do |repo|
+          ::Gitlab.projects(owned: true).auto_paginate.each do |repo|
             next unless matches(repo.name)
 
             begin
