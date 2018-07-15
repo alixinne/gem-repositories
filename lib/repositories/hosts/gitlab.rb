@@ -45,14 +45,40 @@ module Repositories
 
       def create_repository(name)
         with_gitlab do
-          ::Gitlab.create_project(name,
-                                  default_branch: 'master',
-                                  wiki_enabled: 0,
-                                  wall_enabled: 0,
-                                  issues_enabled: 0,
-                                  snippets_enabled: 0,
-                                  merge_requests_enabled: 0,
-                                  public: 0).ssh_url_to_repo
+          rep = ::Gitlab.create_project(name,
+                                        default_branch: 'master',
+                                        wiki_enabled: 0,
+                                        wall_enabled: 0,
+                                        issues_enabled: 0,
+                                        snippets_enabled: 0,
+                                        merge_requests_enabled: 0,
+                                        public: 0)
+
+          Repository.new(rep.name, rep, rep.ssh_url_to_repo, self)
+        end
+      end
+
+      def on_push(repository)
+        STDERR.puts "Pushing to GitLab repository #{repository.name}"
+
+        repo = repository.ref
+        protected_branches = []
+
+        begin
+          ::Gitlab.branches(repo.id).auto_paginate.each do |bran|
+            if bran.protected
+              STDERR.puts "  Unprotecting branch #{bran.name}"
+              ::Gitlab.unprotect_branch(repo.id, bran.name)
+              protected_branches << bran.name
+            end
+          end
+
+          return yield
+        ensure
+          protected_branches.each do |bran_name|
+            STDERR.puts "  Protecting back branch #{bran_name}"
+            ::Gitlab.protect_branch(repo.id, bran_name)
+          end
         end
       end
 

@@ -7,8 +7,11 @@ module Repositories
         @options = options
       end
 
-      def update(source_ssh, target_ssh)
+      def update(source_repository, target_repository)
         success = true
+
+        source_ssh = source_repository.ssh_url
+        target_ssh = target_repository.ssh_url
 
         Dir.mktmpdir do |tmpdir|
           STDERR.puts "Cloning source repository"
@@ -20,11 +23,13 @@ module Repositories
               cmd << "--force" if @options.force
               cmd << target_ssh
 
-              if doexec(cmd)
-                STDERR.puts "Completed!"
-              else
-                STDERR.puts "Failed!"
-                success = false
+              target_repository.on_push do
+                if doexec(cmd)
+                  STDERR.puts "Completed!"
+                else
+                  STDERR.puts "Failed!"
+                  success = false
+                end
               end
             end
           else

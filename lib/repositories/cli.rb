@@ -91,15 +91,11 @@ module Repositories
         hc.hosts_by_use[:backup].each do |backup_host|
           backup_rep = host_repositories[backup_host.name].find { |br| br.normalized_name == nn }
 
-          source_ssh = rep.ssh_url
-          target_ssh = nil
-
           should_update = false
 
           if backup_rep
             # Found a matching backup repository on backup host
             diff_state = rep.find_differences(backup_rep)
-            target_ssh = backup_rep.ssh_url
 
             print_diff_state(rep, backup_rep, diff_state) do
               should_update = true
@@ -112,8 +108,8 @@ module Repositories
             # Create repository
             unless options.dry_run
               STDERR.print "Creating repository... "
-              target_ssh = backup_host.create_repository(rep.name)
-              STDERR.puts "completed at #{target_ssh}"
+              backup_rep = backup_host.create_repository(rep.name)
+              STDERR.puts "completed at #{rep.ssh_url}"
             else
               STDERR.puts "Creating repository on #{backup_host.name}"
             end
@@ -122,7 +118,7 @@ module Repositories
           next unless should_update
 
           STDERR.puts "Updating #{rep.name} on #{backup_host.name}"
-          unless updater.update(source_ssh, target_ssh)
+          unless updater.update(rep, backup_rep)
             exit_code = 1
           end
         end

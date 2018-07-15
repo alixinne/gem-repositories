@@ -47,6 +47,12 @@ module Repositories
       diffs
     end
 
+    def on_push
+      host.on_push(self) do
+        yield
+      end
+    end
+
     def to_yaml_properties
       %i[@name @branches @ssh_url @host]
     end
