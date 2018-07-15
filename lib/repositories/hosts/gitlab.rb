@@ -52,6 +52,7 @@ module Repositories
                                         issues_enabled: 0,
                                         snippets_enabled: 0,
                                         merge_requests_enabled: 0,
+                                        jobs_enabled: 0,
                                         public: 0)
 
           Repository.new(rep.name, rep, rep.ssh_url_to_repo, self)
