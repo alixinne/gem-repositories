@@ -17,28 +17,27 @@ module Repositories
       end
 
       def repositories
-        repos = []
+        Enumerator.new do |yielder|
+          @bitbucket.repos.list.each do |repo|
+            next unless matches(repo.name)
 
-        @bitbucket.repos.list.each do |repo|
-          next unless matches(repo.name)
-          ssh_url = "git@bitbucket.org:#{repo.owner}/#{repo.slug}.git"
-          r = Repository.new(repo.name, repo, ssh_url, self)
+            ssh_url = "git@bitbucket.org:#{repo.owner}/#{repo.slug}.git"
+            r = Repository.new(repo.name, repo, ssh_url, self)
 
-          @bitbucket.repos.branches(repo.owner, repo.slug) do |name, _bran|
-            response = []
-            @bitbucket.repos.commits.list(repo.owner, repo.slug, name).each do |item|
-              response << item
+            @bitbucket.repos.branches(repo.owner, repo.slug) do |name, _bran|
+              response = []
+              @bitbucket.repos.commits.list(repo.owner, repo.slug, name).each do |item|
+                response << item
+              end
+              comm = response[1][1][0]
+
+              c = Commit.new(comm['hash'], comm.author.raw, comm['date'], r)
+              r.branches << Branch.new(name, c, r)
             end
-            comm = response[1][1][0]
 
-            c = Commit.new(comm['hash'], comm.author.raw, comm['date'], r)
-            r.branches << Branch.new(name, c, r)
+            yielder << r
           end
-
-          repos << r
         end
-
-        repos
       end
     end
   end

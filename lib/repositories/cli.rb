@@ -39,15 +39,19 @@ module Repositories
       options = parse(argv)
 
       # Load config for Git hosts
-      hc = HostConfig.load(options.hosts)
+      host_config = HostConfig.load(options.hosts)
 
+      run_backup(options, host_config)
+    end
+
+    def self.run_backup(options, host_config)
       # Build a hash of all repositories
-      host_repositories = hr(hc)
+      host_repositories = hr(host_config)
 
       # Check all source repositories
       named_repositories = Hash.new { |hash, key| hash[key] = [] }
 
-      hc.hosts_by_use[:source].each do |host|
+      host_config.hosts_by_use[:source].each do |host|
         host_repositories[host.name].each do |rep|
           named_repositories[rep.normalized_name] << rep
         end
@@ -88,7 +92,7 @@ module Repositories
       updater = Repositories::Actors::SSHUpdater.new(options)
 
       source_repositories.each do |nn, rep|
-        hc.hosts_by_use[:backup].each do |backup_host|
+        host_config.hosts_by_use[:backup].each do |backup_host|
           backup_rep = host_repositories[backup_host.name].find { |br| br.normalized_name == nn }
 
           should_update = false
@@ -127,22 +131,30 @@ module Repositories
       exit_code # success
     end
 
-    def self.hr(hc)
+    def self.fetch_host_repositories(type, host)
+      STDERR.puts "Fetching #{type} repositories..."
+      begin
+        return host.repositories
+      rescue => e
+        STDERR.puts "#{type}: failed to fetch repositories: #{e}"
+        if host.use_as == :backup
+          raise "Failed to fetch backup host repositories"
+        else
+          return []
+        end
+      end
+    end
+
+    def self.hr(host_config)
       reps = {}
 
-      hc.hosts.each do |type, host|
-        STDERR.puts "Fetching #{type} repositories..."
-        begin
-          reps[type] = host.repositories
-        rescue => e
-          STDERR.puts "#{type}: failed to fetch repositories: #{e}"
-          if host.use_as == :backup
-            STDERR.puts "Cannot continue, aborting."
-            exit(2)
-          else
-            reps[type] = []
-          end
-        end
+      host_config.hosts.each do |type, host|
+        reps[type] = begin
+                       fetch_host_repositories(type, host).to_a
+                     rescue => e
+                       STDERR.puts "Cannot continue, aborting."
+                       exit(2)
+                     end
       end
 
       reps

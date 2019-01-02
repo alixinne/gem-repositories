@@ -18,29 +18,28 @@ module Repositories
       end
 
       def repositories
-        repos = []
+        Enumerator.new do |yielder|
+          @github.repos.list.body.each do |repo|
+            next unless matches(repo.name)
 
-        @github.repos.list.body.each do |repo|
-          next unless matches(repo.name)
-          r = Repository.new(repo.name, repo, repo.ssh_url, self)
+            r = Repository.new(repo.name, repo, repo.ssh_url, self)
 
-          @github.repos.branches(repo.owner.login, repo.name).body.each do |bran|
-            c = @github.repos.commits.get(repo.owner.login,
-                                          repo.name,
-                                          bran.commit.sha)
+            @github.repos.branches(repo.owner.login, repo.name).body.each do |bran|
+              c = @github.repos.commits.get(repo.owner.login,
+                                            repo.name,
+                                            bran.commit.sha)
 
-            r.branches << Branch.new(bran.name,
-                                     Commit.new(c.sha,
-                                                "#{c.commit.author.name} <#{c.commit.author.email}>",
-                                                c.commit.author.date,
-                                                r),
-                                     r)
+              r.branches << Branch.new(bran.name,
+                                       Commit.new(c.sha,
+                                                  "#{c.commit.author.name} <#{c.commit.author.email}>",
+                                                  c.commit.author.date,
+                                                  r),
+                                       r)
+            end
+
+            yielder << r
           end
-
-          repos << r
         end
-
-        repos
       end
     end
   end

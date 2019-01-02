@@ -16,30 +16,28 @@ module Repositories
 
       def repositories
         with_gitlab do
-          repos = []
+          Enumerator.new do |yielder|
+            ::Gitlab.projects(owned: true).auto_paginate.each do |repo|
+              next unless matches(repo.name)
 
-          ::Gitlab.projects(owned: true).auto_paginate.each do |repo|
-            next unless matches(repo.name)
+              begin
+                r = Repository.new(repo.name, repo, repo.ssh_url_to_repo, self)
 
-            begin
-              r = Repository.new(repo.name, repo, repo.ssh_url_to_repo, self)
+                ::Gitlab.branches(repo.id).auto_paginate.each do |bran|
+                  r.branches << Branch.new(bran.name,
+                                           Commit.new(bran.commit.id,
+                                                      "#{bran.commit.author_name} <#{bran.commit.author_email}>",
+                                                      bran.commit.authored_date,
+                                                      r),
+                                           r)
+                end
 
-              ::Gitlab.branches(repo.id).auto_paginate.each do |bran|
-                r.branches << Branch.new(bran.name,
-                                         Commit.new(bran.commit.id,
-                                                    "#{bran.commit.author_name} <#{bran.commit.author_email}>",
-                                                    bran.commit.authored_date,
-                                                    r),
-                                         r)
+                yielder << r
+              rescue => e
+                puts "Could not fetch #{repo.name}, it may not belong to us: #{e}"
               end
-
-              repos << r
-            rescue => e
-              puts "Could not fetch #{repo.name}, it may not belong to us: #{e}"
             end
           end
-
-          repos
         end
       end
 
