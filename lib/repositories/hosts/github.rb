@@ -19,11 +19,11 @@ module Repositories
 
       def repositories
         Enumerator.new do |yielder|
-          @github.repos.list.body.each do |repo|
+          @github.repos.list.each do |repo|
             next unless matches(repo.name)
 
             yielder << Repository.new(repo.name, repo, repo.ssh_url, self) do |r, branches|
-              @github.repos.branches(repo.owner.login, repo.name).body.each do |bran|
+              @github.repos.branches.list(repo.owner.login, repo.name).each do |bran|
                 c = @github.repos.commits.get(repo.owner.login,
                                               repo.name,
                                               bran.commit.sha)
