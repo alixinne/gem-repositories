@@ -81,6 +81,7 @@ module Repositories
 
       def on_push(_repository)
         # nothing to do on Gitea
+        yield
       end
     end
   end
