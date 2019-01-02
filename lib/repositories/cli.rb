@@ -15,6 +15,7 @@ module Repositories
       options.force = false
       options.dry_run = false
       options.list = nil
+      options.only = []
 
       opt_parser = OptionParser.new do |opts|
         opts.banner = "Usage: repupdate [options]"
@@ -33,6 +34,10 @@ module Repositories
 
         opts.on("-l", "--list [NAME]", "List discovered repositories") do |name|
           options.list = name
+        end
+
+        opts.on("-o", "--only [NAME]", "Only consider specific repositories") do |name|
+          options.only << name.downcase
         end
       end
       opt_parser.parse!(argv)
@@ -69,7 +74,7 @@ module Repositories
 
     def self.run_backup(options, host_config)
       # Build a hash of all repositories
-      host_repositories = hr(host_config)
+      host_repositories = hr(host_config, options.only)
 
       # Check all source repositories
       named_repositories = Hash.new { |hash, key| hash[key] = [] }
@@ -168,12 +173,15 @@ module Repositories
       end
     end
 
-    def self.hr(host_config)
+    def self.hr(host_config, only_repos)
       reps = {}
 
+      only_repos = Set.new(only_repos)
       host_config.hosts.each do |type, host|
         reps[type] = begin
-                       fetch_host_repositories(type, host).to_a
+                       fetch_host_repositories(type, host).select do |repo|
+                         only_repos.empty? || only_repos.include?(repo.name.downcase)
+                       end.to_a
                      rescue => e
                        STDERR.puts "Cannot continue, aborting."
                        exit(2)
