@@ -21,18 +21,16 @@ module Repositories
               next unless matches(repo.name)
 
               begin
-                r = Repository.new(repo.name, repo, repo.ssh_url_to_repo, self)
-
-                ::Gitlab.branches(repo.id).auto_paginate.each do |bran|
-                  r.branches << Branch.new(bran.name,
+                yielder << Repository.new(repo.name, repo, repo.ssh_url_to_repo, self) do |r, branches|
+                  ::Gitlab.branches(repo.id).auto_paginate.each do |bran|
+                    branches << Branch.new(bran.name,
                                            Commit.new(bran.commit.id,
                                                       "#{bran.commit.author_name} <#{bran.commit.author_email}>",
                                                       bran.commit.authored_date,
                                                       r),
                                            r)
+                  end
                 end
-
-                yielder << r
               rescue => e
                 puts "Could not fetch #{repo.name}, it may not belong to us: #{e}"
               end

@@ -22,20 +22,18 @@ module Repositories
             next unless matches(repo.name)
 
             ssh_url = "git@bitbucket.org:#{repo.owner}/#{repo.slug}.git"
-            r = Repository.new(repo.name, repo, ssh_url, self)
+            yielder << Repository.new(repo.name, repo, ssh_url, self) do |r, branches|
+              @bitbucket.repos.branches(repo.owner, repo.slug) do |name, _bran|
+                response = []
+                @bitbucket.repos.commits.list(repo.owner, repo.slug, name).each do |item|
+                  response << item
+                end
+                comm = response[1][1][0]
 
-            @bitbucket.repos.branches(repo.owner, repo.slug) do |name, _bran|
-              response = []
-              @bitbucket.repos.commits.list(repo.owner, repo.slug, name).each do |item|
-                response << item
+                c = Commit.new(comm['hash'], comm.author.raw, comm['date'], r)
+                branches << Branch.new(name, c, r)
               end
-              comm = response[1][1][0]
-
-              c = Commit.new(comm['hash'], comm.author.raw, comm['date'], r)
-              r.branches << Branch.new(name, c, r)
             end
-
-            yielder << r
           end
         end
       end

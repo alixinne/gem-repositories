@@ -2,14 +2,27 @@ require 'repositories/base'
 
 module Repositories
   class Repository
-    attr_reader :name, :ref, :branches, :ssh_url, :host
+    attr_reader :name, :ref, :ssh_url, :host
 
     def initialize(name, ref, ssh_url, host)
       @name = name
       @ref = ref
       @host =  host
       @ssh_url = ssh_url
-      @branches = []
+
+      @branches = nil
+      @branches_source = Enumerator.new do |yielder|
+        yield(self, yielder)
+      end
+    end
+
+    def branches
+      if @branches.nil?
+        @branches = @branches_source.to_a
+        @branches_source = nil
+      end
+
+      @branches
     end
 
     def normalized_name

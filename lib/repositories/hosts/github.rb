@@ -22,22 +22,20 @@ module Repositories
           @github.repos.list.body.each do |repo|
             next unless matches(repo.name)
 
-            r = Repository.new(repo.name, repo, repo.ssh_url, self)
+            yielder << Repository.new(repo.name, repo, repo.ssh_url, self) do |r, branches|
+              @github.repos.branches(repo.owner.login, repo.name).body.each do |bran|
+                c = @github.repos.commits.get(repo.owner.login,
+                                              repo.name,
+                                              bran.commit.sha)
 
-            @github.repos.branches(repo.owner.login, repo.name).body.each do |bran|
-              c = @github.repos.commits.get(repo.owner.login,
-                                            repo.name,
-                                            bran.commit.sha)
-
-              r.branches << Branch.new(bran.name,
+                branches << Branch.new(bran.name,
                                        Commit.new(c.sha,
                                                   "#{c.commit.author.name} <#{c.commit.author.email}>",
                                                   c.commit.author.date,
                                                   r),
                                        r)
+              end
             end
-
-            yielder << r
           end
         end
       end

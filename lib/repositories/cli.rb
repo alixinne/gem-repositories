@@ -56,7 +56,7 @@ module Repositories
     def self.run_list(options, host_config)
       if !(host = host_config.hosts[options.list]).nil?
         host.repositories.each do |repository|
-          puts YAML.dump(repository)
+          puts repository.name
         end
 
         0
