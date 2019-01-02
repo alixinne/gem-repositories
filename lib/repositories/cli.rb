@@ -37,7 +37,7 @@ module Repositories
         end
 
         opts.on("-o", "--only [NAME]", "Only consider specific repositories") do |name|
-          options.only << name.downcase
+          options.only << Repository.to_rep_name(name)
         end
       end
       opt_parser.parse!(argv)
@@ -182,7 +182,7 @@ module Repositories
       host_config.hosts.each do |type, host|
         reps[type] = begin
                        fetch_host_repositories(type, host).select do |repo|
-                         only_repos.empty? || only_repos.include?(repo.name.downcase)
+                         only_repos.empty? || only_repos.include?(repo.name)
                        end.to_a
                      rescue => e
                        STDERR.puts "Cannot continue, aborting."

@@ -4,8 +4,12 @@ module Repositories
   class Repository
     attr_reader :name, :ref, :ssh_url, :host
 
+    def self.to_rep_name(name)
+      name.downcase.tr(' .-/', '-').gsub(/-+/, '-')
+    end
+
     def initialize(name, ref, ssh_url, host)
-      @name = name
+      @name = Repository.to_rep_name(name)
       @ref = ref
       @host =  host
       @ssh_url = ssh_url
