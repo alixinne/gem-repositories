@@ -54,6 +54,34 @@ module Repositories
           end
         end
       end
+
+      def create_repository(name, description = '')
+        RestClient.post "#{@base}/user/repos", {
+          'auto_init' => false,
+          'description' => description,
+          'name' => name,
+          'private' => true
+        }.to_json,
+        params: { access_token: @token },
+        content_type: :json,
+        accept: :json do |response, _request, _result|
+          case response.code
+          when 201
+            begin
+              parsed = JSON.parse(response.body)
+              Repository.new(parsed['name'], parsed, parsed['ssh_url'], self)
+            rescue JSON::UnparserError => e
+              raise "Failed to parse response to repo creation: #{e}"
+            end
+          else
+            raise "Failed to create repository: #{response}"
+          end
+        end
+      end
+
+      def on_push(_repository)
+        # nothing to do on Gitea
+      end
     end
   end
 end
