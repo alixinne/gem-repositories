@@ -14,6 +14,7 @@ module Repositories
       options.hosts = 'hosts.yml'
       options.force = false
       options.dry_run = false
+      options.list = nil
 
       opt_parser = OptionParser.new do |opts|
         opts.banner = "Usage: repupdate [options]"
@@ -29,6 +30,10 @@ module Repositories
         opts.on("-f", "--force", "Force push to backup repositories") do
           options.force = true
         end
+
+        opts.on("-l", "--list [NAME]", "List discovered repositories") do |name|
+          options.list = name
+        end
       end
       opt_parser.parse!(argv)
       options
@@ -41,7 +46,25 @@ module Repositories
       # Load config for Git hosts
       host_config = HostConfig.load(options.hosts)
 
-      run_backup(options, host_config)
+      if options.list.nil?
+        run_backup(options, host_config)
+      else
+        run_list(options, host_config)
+      end
+    end
+
+    def self.run_list(options, host_config)
+      if !(host = host_config.hosts[options.list]).nil?
+        host.repositories.each do |repository|
+          puts YAML.dump(repository)
+        end
+
+        0
+      else
+        STDERR.puts "#{options.list}: host not found"
+
+        1
+      end
     end
 
     def self.run_backup(options, host_config)
