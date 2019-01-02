@@ -2,17 +2,19 @@ require 'repositories/base'
 
 module Repositories
   class Repository
-    attr_reader :name, :ref, :ssh_url, :host
+    attr_reader :name, :description, :ref, :ssh_url, :web_url, :host
 
     def self.to_rep_name(name)
       name.downcase.tr(' .-/', '-').gsub(/-+/, '-')
     end
 
-    def initialize(name, ref, ssh_url, host)
+    def initialize(name, description, ref, ssh_url, web_url, host)
       @name = Repository.to_rep_name(name)
+      @description = description
       @ref = ref
       @host =  host
       @ssh_url = ssh_url
+      @web_url = web_url
 
       @branches = nil
       @branches_source = Enumerator.new do |yielder|

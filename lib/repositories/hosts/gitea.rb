@@ -22,7 +22,7 @@ module Repositories
                 repos = JSON.parse(response.body)
 
                 repos.each do |repo|
-                  yielder << Repository.new(repo['name'], repo, repo['ssh_url'], self) do |r, branches|
+                  yielder << Repository.new(repo['name'], repo['description'], repo, repo['ssh_url'], repo['html_url'], self) do |r, branches|
                     RestClient.get "#{@base}/repos/#{repo['full_name']}/branches", { params: { access_token: @token }, accept: :json } do |response, request, result|
                       case response.code
                       when 200
@@ -69,13 +69,23 @@ module Repositories
           when 201
             begin
               parsed = JSON.parse(response.body)
-              Repository.new(parsed['name'], parsed, parsed['ssh_url'], self)
+              Repository.new(parsed['name'], parsed['description'], parsed, parsed['ssh_url'], parsed['html_url'], self)
             rescue JSON::UnparserError => e
               raise "Failed to parse response to repo creation: #{e}"
             end
           else
             raise "Failed to create repository: #{response}"
           end
+        end
+      end
+
+      def update_description(repository, description)
+        RestClient.put "#{@base}/user/repos", {
+          'description' => description
+        }.to_json,
+        params: { access_token: @token },
+        content_type: :json,
+        accept: :json do |_response, _request, _result|
         end
       end
 

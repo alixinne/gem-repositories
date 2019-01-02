@@ -22,7 +22,7 @@ module Repositories
           @github.repos.list.each do |repo|
             next unless matches(repo.name)
 
-            yielder << Repository.new(repo.name, repo, repo.ssh_url, self) do |r, branches|
+            yielder << Repository.new(repo.name, repo.description, repo, repo.ssh_url, repo.html_url, self) do |r, branches|
               @github.repos.branches.list(repo.owner.login, repo.name).each do |bran|
                 c = @github.repos.commits.get(repo.owner.login,
                                               repo.name,

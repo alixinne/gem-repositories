@@ -124,6 +124,7 @@ module Repositories
           backup_rep = host_repositories[backup_host.name].find { |br| br.normalized_name == nn }
 
           should_update = false
+          description = "[backup] #{rep.web_url}"
 
           if backup_rep
             # Found a matching backup repository on backup host
@@ -140,10 +141,17 @@ module Repositories
             # Create repository
             unless options.dry_run
               STDERR.print "Creating repository... "
-              backup_rep = backup_host.create_repository(rep.name)
+              backup_rep = backup_host.create_repository(rep.name, description)
               STDERR.puts "completed at #{rep.ssh_url}"
             else
               STDERR.puts "Creating repository on #{backup_host.name}"
+            end
+          end
+
+          if backup_rep.description != description
+            STDERR.puts "Updating #{backup_rep.web_url} description"
+            unless options.dry_run
+              backup_host.update_description(backup_rep, description)
             end
           end
 
@@ -185,7 +193,7 @@ module Repositories
                          only_repos.empty? || only_repos.include?(repo.name)
                        end.to_a
                      rescue => e
-                       STDERR.puts "Cannot continue, aborting."
+                       STDERR.puts "Cannot continue, aborting: #{e}"
                        exit(2)
                      end
       end

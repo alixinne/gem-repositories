@@ -21,7 +21,7 @@ module Repositories
               next unless matches(repo.name)
 
               begin
-                yielder << Repository.new(repo.name, repo, repo.ssh_url_to_repo, self) do |r, branches|
+                yielder << Repository.new(repo.name, repo.description, repo, repo.ssh_url_to_repo, repo.web_url, self) do |r, branches|
                   ::Gitlab.branches(repo.id).auto_paginate.each do |bran|
                     branches << Branch.new(bran.name,
                                            Commit.new(bran.commit.id,
@@ -39,7 +39,7 @@ module Repositories
         end
       end
 
-      def create_repository(name)
+      def create_repository(name, description)
         with_gitlab do
           rep = ::Gitlab.create_project(name,
                                         default_branch: 'master',
@@ -49,9 +49,16 @@ module Repositories
                                         snippets_enabled: 0,
                                         merge_requests_enabled: 0,
                                         jobs_enabled: 0,
-                                        public: 0)
+                                        public: 0,
+                                        description: description)
 
-          Repository.new(rep.name, rep, rep.ssh_url_to_repo, self)
+          Repository.new(rep.name, rep.description, rep, rep.ssh_url_to_repo, rep.web_url, self)
+        end
+      end
+
+      def update_description(repository, description)
+        with_gitlab do
+          ::Gitlab.edit_project(repository.ref.id, description: description)
         end
       end
 
