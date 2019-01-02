@@ -150,8 +150,10 @@ module Repositories
           next unless should_update
 
           STDERR.puts "Updating #{rep.name} on #{backup_host.name}"
-          unless updater.update(rep, backup_rep)
-            exit_code = 1
+          unless options.dry_run
+            unless updater.update(rep, backup_rep)
+              exit_code = 1
+            end
           end
         end
       end
