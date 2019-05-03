@@ -16,6 +16,9 @@ module Repositories
       options.dry_run = false
       options.list = nil
       options.only = []
+      options.scrub = false
+      options.scrub_only = false
+      options.verbose = false
 
       opt_parser = OptionParser.new do |opts|
         opts.banner = "Usage: repupdate [options]"
@@ -39,6 +42,18 @@ module Repositories
         opts.on("-o", "--only [NAME]", "Only consider specific repositories") do |name|
           options.only << Repository.to_rep_name(name)
         end
+
+        opts.on("-s", "--scrub", "Remove repositories not present in source") do
+          options.scrub = true
+        end
+
+        opts.on("-S", "--scrub-only", "Only remove repositories not present in source") do
+          options.scrub_only = true
+        end
+
+        opts.on("-v", "--verbose", "Enable verbose mode") do
+          options.verbose = true
+        end
       end
       opt_parser.parse!(argv)
       options
@@ -51,17 +66,87 @@ module Repositories
       # Load config for Git hosts
       host_config = HostConfig.load(options.hosts)
 
-      if options.list.nil?
-        run_backup(options, host_config)
+      if options.scrub_only
+        run_scrub(options, host_config)
+      elsif options.list.nil?
+        res = run_backup(options, host_config)
+
+        if options.scrub
+          if res == 0
+            res = run_scrub(options, host_config)
+          else
+            STDERR.puts "Not continuing with scrub since backup failed"
+          end
+        end
+
+        res
       else
         run_list(options, host_config)
       end
     end
 
+    def self.run_scrub(options, host_config)
+      # Build a hash of all repositories
+      host_repositories = hr(host_config, options.only)
+
+      # Find repositories on the backup hosts
+      status = {}
+
+      host_config.hosts_by_use[:backup].each do |backup_host|
+        host_repositories[backup_host.name].each do |backup_rep|
+          if m = /^\[backup\] (.*)$/.match(backup_rep.description)
+            STDERR.puts "#{backup_rep.web_url} is a backup of #{m[1]} (as #{backup_rep.normalized_name})"
+
+            status[backup_rep.normalized_name] = {
+              found: false,
+              backup_rep: backup_rep
+            }
+          end
+        end
+      end
+
+      host_config.hosts_by_use[:source].each do |source_host|
+        host_repositories[source_host.name].each do |source_rep|
+          if status.include? source_rep.normalized_name
+            status[source_rep.normalized_name][:found] = true
+          else
+            STDERR.puts "#{source_rep.web_url} has not been backed up yet"
+          end
+        end
+      end
+
+      code = 0
+
+      status.each do |name, rep_status|
+        unless rep_status[:found]
+          begin
+            STDERR.puts "#{rep_status[:backup_rep].web_url} is to be deleted"
+
+            unless options.dry_run
+              rep = rep_status[:backup_rep]
+              rep.host.delete_repository(rep)
+              STDERR.puts "#{rep_status[:backup_rep].web_url} deleted"
+            else
+              STDERR.puts "#{rep_status[:backup_rep].web_url} is to be deleted"
+            end
+          rescue => e
+            STDERR.puts "#{rep_status[:backup_rep].web_url} error: #{e.inspect}"
+            code = 2
+          end
+        end
+      end
+
+      code
+    end
+
     def self.run_list(options, host_config)
       if !(host = host_config.hosts[options.list]).nil?
         host.repositories.each do |repository|
-          puts repository.name
+          if options.verbose
+            p repository
+          else
+            puts repository.name
+          end
         end
 
         0

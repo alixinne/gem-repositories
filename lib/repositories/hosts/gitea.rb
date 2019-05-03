@@ -89,6 +89,19 @@ module Repositories
         end
       end
 
+      def delete_repository(repository)
+        RestClient.delete "#{@base}/repos/#{repository.ref['owner']['username']}/#{repository.name}",
+          params: { access_token: @token },
+          content_type: :json,
+          accept: :json do |response, _request, result|
+            case response.code
+              when 204
+              else
+                raise "Failed to delete repository: #{response}"
+            end
+        end
+      end
+
       def on_push(_repository)
         # nothing to do on Gitea
         yield
