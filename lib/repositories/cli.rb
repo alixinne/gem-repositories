@@ -188,7 +188,8 @@ module Repositories
         end
 
         if unmatch_count > 0
-          ref_rep = reps.max_by { |rep| rep.most_recent_head.date }
+          # On missing branches the date might be null, so default to now, which would be more recent
+          ref_rep = reps.max_by { |rep| rep.most_recent_head.date || DateTime.now }
           STDERR.puts "On #{ref_rep.name}: differences were found between "\
                       "source repositories. Using #{ref_rep.host.name} as a "\
                       "source."
