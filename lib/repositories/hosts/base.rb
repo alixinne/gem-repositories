@@ -3,7 +3,7 @@ require 'repositories/base'
 module Repositories
   module Hosts
     class Base
-      attr_reader :type, :use_as, :exclude, :name
+      attr_reader :type, :use_as, :exclude, :name, :priority
 
       def initialize(config)
         @name = config['name'] || config['type'].to_s
@@ -14,6 +14,7 @@ module Repositories
         @use_as = (config['use_as'] || 'source').downcase.to_sym
         @exclude = config['exclude'] || []
         @include = config['include']
+        @priority = ((config['priority'] || "100").to_i || 100)
       end
 
       def matches(rep_name)
