@@ -5,7 +5,7 @@ require 'repositories/hosts/gitlab'
 
 module Repositories
   class HostConfig
-    attr_reader :hosts, :hosts_by_use
+    attr_reader :hosts, :hosts_by_use, :keep_repos
 
     def initialize(config)
       @hosts_by_use = Hash.new { |hash, key| hash[key] = [] }
@@ -22,6 +22,8 @@ module Repositories
         # Add to name hash
         @hosts[h.name] = h
       end
+
+      @keep_repos = (config['keep_repos'] || []).map(&:downcase).to_a
     end
 
     def self.load(path)

@@ -115,6 +115,12 @@ module Repositories
         end
       end
 
+      host_config.keep_repos.each do |repo_name|
+        if status.include? repo_name
+          status[repo_name][:found] = true
+        end
+      end
+
       code = 0
 
       status.each do |name, rep_status|
