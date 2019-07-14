@@ -120,8 +120,6 @@ module Repositories
       status.each do |name, rep_status|
         unless rep_status[:found]
           begin
-            STDERR.puts "#{rep_status[:backup_rep].web_url} is to be deleted"
-
             unless options.dry_run
               rep = rep_status[:backup_rep]
               rep.host.delete_repository(rep)
