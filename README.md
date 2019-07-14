@@ -1,8 +1,8 @@
 # Repositories
 
 _Repositories_ is a gem implementing a ``repupdate`` command that synchronizes
-a set of repositories on Git hosts (GitLab, Bitbucket, GitHub) to a set of
-destination Git hosts (currently, only GitLab).
+a set of repositories on Git hosts (GitLab, GitHub, Gitea) to a set of
+destination Git hosts (currently, only GitLab and Gitea).
 
 Matching repositories accross hosts is based on lowercased repository names. Any
 difference in branch HEADS will trigger an update from the source repository to
