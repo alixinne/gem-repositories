@@ -1,5 +1,4 @@
 require 'repositories/base'
-require 'repositories/hosts/bitbucket'
 require 'repositories/hosts/gitea'
 require 'repositories/hosts/github'
 require 'repositories/hosts/gitlab'

@@ -31,12 +31,6 @@ hosts:
     use_as: source
     exclude:
       - some-repository # don't backup this
-  - type: bitbucket
-    username: **insert username**
-    token: **insert private token**
-    use_as: source
-    include:
-      - other-repository # only backup this
   - type: gitlab
     base: https://[gitlab-api-domain]/api/v4
     username: **insert username**
