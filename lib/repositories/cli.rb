@@ -224,7 +224,7 @@ module Repositories
             end
           else
             # Found no matching backup repository
-            STDERR.puts "#{rep.name} is missing from #{backup_host.name}"
+            STDERR.puts "#{rep.name} (#{nn}) is missing from #{backup_host.name}"
             should_update = true
 
             # Create repository
@@ -237,7 +237,7 @@ module Repositories
             end
           end
 
-          if backup_rep.description != description
+          if !options.dry_run && backup_rep.description != description
             STDERR.puts "Updating #{backup_rep.web_url} description"
             unless options.dry_run
               backup_host.update_description(backup_rep, description)
