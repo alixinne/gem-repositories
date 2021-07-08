@@ -29,6 +29,7 @@ module Repositories
 
                   repos.each do |repo|
                     had_results = true
+                    next unless matches(Repository.to_rep_name(repo['name']))
 
                     yielder << Repository.new(repo['name'], repo['description'], repo, repo['ssh_url'], repo['html_url'], self) do |r, branches|
                       RestClient.get "#{@base}/repos/#{repo['full_name']}/branches", { params: { access_token: @token }, accept: :json } do |response, request, result|

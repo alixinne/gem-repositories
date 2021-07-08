@@ -18,7 +18,7 @@ module Repositories
         with_gitlab do
           Enumerator.new do |yielder|
             ::Gitlab.projects(owned: true).auto_paginate.each do |repo|
-              next unless matches(repo.name)
+              next unless matches(Repository.to_rep_name(repo.name))
 
               begin
                 yielder << Repository.new(repo.name, repo.description, repo, repo.ssh_url_to_repo, repo.web_url, self) do |r, branches|

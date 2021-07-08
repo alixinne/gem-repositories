@@ -43,7 +43,7 @@ module Repositories
       def repositories
         Enumerator.new do |yielder|
           @github.repos.list.each do |repo|
-            next unless matches(repo.name)
+            next unless matches(Repository.to_rep_name(repo.name))
             next unless should_include_fork?(repo)
 
             yielder << Repository.new(repo.name, repo.description, repo, repo.ssh_url, repo.html_url, self) do |r, branches|
