@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    repositories (0.1.0)
+    repositories (1.0.0)
       github_api (~> 0.18)
       gitlab (~> 4.8)
       rest-client (~> 2.0)
