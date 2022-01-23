@@ -5,7 +5,7 @@ RUN apk add --no-cache git ruby-dev make g++
 
 WORKDIR /usr/src/app
 COPY . .
-RUN bundle install
+RUN bundle install --binstubs=/usr/local/bundle/bin
 
 
 # Runtime image
