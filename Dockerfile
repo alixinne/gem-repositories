@@ -11,7 +11,7 @@ RUN bundle install --binstubs=/usr/local/bundle/bin
 # Runtime image
 FROM docker.io/library/ruby:3.1.0-alpine3.15
 
-RUN apk add --no-cache git
+RUN apk add --no-cache git openssh-client
 
 WORKDIR /usr/src/app
 COPY --from=build /usr/src/app .
