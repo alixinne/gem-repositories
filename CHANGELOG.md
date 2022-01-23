@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/vtavernier/gem-repositories/compare/v1.0.1...v1.1.0) (2022-01-23)
+
+
+### Features
+
+* add ssh to Docker image ([2973a7b](https://github.com/vtavernier/gem-repositories/commit/2973a7b4453707fe41bc518c5cabcd688c3f198b))
+
 ## [1.0.1](https://github.com/vtavernier/gem-repositories/compare/v1.0.0...v1.0.1) (2022-01-23)
 
 
