@@ -42,7 +42,7 @@ jobs:
             LABEL=latest
             PUSH=true
           else
-            LABEL="$(echo -n "$GITHUB_REF" | sed 's#refs/heads/##')"
+            LABEL="$(echo -n "$GITHUB_REF" | sed 's#refs/heads/##' | tr '[]()/' '-' | sed 's#--#-#g' | sed 's#-$##')"
             PUSH=false
           fi
 
