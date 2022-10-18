@@ -32,7 +32,7 @@ jobs:
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
+          username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Compute target image labels
@@ -48,9 +48,9 @@ jobs:
 
           echo ::set-output name=label::"$LABEL"
           echo ::set-output name=push::"$PUSH"
-          echo ::set-output name=ghcr::"ghcr.io/${{ github.actor }}/gem-repositories"
+          echo ::set-output name=ghcr::"ghcr.io/${{ github.repository_owner }}/gem-repositories"
           if [[ "${{ steps.semantic.outputs.new_release_published }}" == "true" ]]; then
-            echo ::set-output name=ghcr_tag::"ghcr.io/${{ github.actor }}/gem-repositories:${{ steps.semantic.outputs.new_release_version }}"
+            echo ::set-output name=ghcr_tag::"ghcr.io/${{ github.repository_owner }}/gem-repositories:${{ steps.semantic.outputs.new_release_version }}"
           else
             echo ::set-output name=ghcr_tag::
           fi
