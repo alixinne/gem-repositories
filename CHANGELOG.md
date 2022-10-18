@@ -1,3 +1,11 @@
+## [1.1.1](https://github.com/vtavernier/gem-repositories/compare/v1.1.0...v1.1.1) (2022-10-18)
+
+
+### Bug Fixes
+
+* bump rack from 2.2.3 to 3.0.0 ([#2](https://github.com/vtavernier/gem-repositories/issues/2)) ([f9fe355](https://github.com/vtavernier/gem-repositories/commit/f9fe355455c586b1e218742fe875e61f85dc3f19))
+* update rake requirement from ~> 10.0 to ~> 13.0 ([#4](https://github.com/vtavernier/gem-repositories/issues/4)) ([fb60a2c](https://github.com/vtavernier/gem-repositories/commit/fb60a2c17373e37cce109b66e09ea7320f798feb))
+
 # [1.1.0](https://github.com/vtavernier/gem-repositories/compare/v1.0.1...v1.1.0) (2022-01-23)
 
 
